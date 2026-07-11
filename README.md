@@ -9,6 +9,10 @@ requests waiting on you, right in the macOS menu bar:
 Each entry links straight to the PR and shows how long it's been open. The token
 is read from the macOS Keychain, so it never lives in the script.
 
+## Preview
+
+![The plugin's menu bar dropdown showing Needs Review and Approved sections](assets/preview.png)
+
 ## Requirements
 
 - macOS with [SwiftBar](https://github.com/swiftbar/SwiftBar) installed
