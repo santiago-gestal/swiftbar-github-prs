@@ -4,6 +4,9 @@ A [SwiftBar](https://github.com/swiftbar/SwiftBar) plugin that shows GitHub pull
 requests waiting on you, right in the macOS menu bar:
 
 - **Needs Review** — open PRs that requested your review and aren't approved yet.
+- **Reviewed** — open PRs you've already reviewed (e.g. left comments or requested
+  changes) that aren't approved yet. GitHub drops you from the review-requested
+  list once you submit a review, so these would otherwise disappear.
 - **Approved** — open PRs assigned to you that have been approved.
 
 Each entry links straight to the PR and shows how long it's been open. The token
@@ -11,7 +14,7 @@ is read from the macOS Keychain, so it never lives in the script.
 
 ## Preview
 
-![The plugin's menu bar dropdown showing Needs Review and Approved sections](assets/preview.png)
+![The plugin's menu bar dropdown showing Needs Review, Reviewed, and Approved sections](assets/preview.png)
 
 ## Requirements
 
@@ -47,7 +50,7 @@ security add-generic-password \
 
 ### 3. Configure the script
 
-Edit the constants at the top of `fetch-prs.3m.py` so they match your GitHub
+Edit the constants at the top of `fetch-prs.5m.py` so they match your GitHub
 username and the names you used above:
 
 ```python
@@ -61,9 +64,9 @@ KEYCHAIN_TOKEN = "your-keychain-token"
 Copy the script into your SwiftBar plugins folder and make it executable:
 
 ```bash
-chmod +x fetch-prs.3m.py
+chmod +x fetch-prs.5m.py
 ```
 
 Then refresh SwiftBar (menu bar → **SwiftBar → Refresh All**, or just quit and
-reopen). The `3m` in the filename sets the refresh interval — rename it to taste,
+reopen). The `5m` in the filename sets the refresh interval — rename it to taste,
 e.g. `fetch-prs.1m.py` for every minute.

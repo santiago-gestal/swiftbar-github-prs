@@ -16,6 +16,8 @@ GITHUB_SEARCH_URL = "https://api.github.com/search/issues"
 # Colors for the UI
 ORANGE = "#FF8000"
 ORANGE_LIGHT = "#FFA64D"
+BLUE = "#3B82F6"
+BLUE_LIGHT = "#7FA8F5"
 GREEN = "#2E9E4F"
 GREEN_LIGHT = "#6FC98A"
 GRAY = "#8E8E93"
@@ -122,16 +124,26 @@ def fetch_prs():
 
     # Pending review: open PRs requesting your review and not yet approved.
     for_review = get_query(search(f"review-requested:{GITHUB_USERNAME}", "-review:approved"), headers)
-    # Approved: open PRs assigned to you that are approved by anyone. GitHub drops
-    # you from `review-requested` once you submit a review, so we union two queries
-    # to catch both PRs still awaiting your review and ones you already reviewed.
+
+    # Reviewed, not approved: PRs you've already reviewed that aren't approved yet
+    reviewed = get_query(search(f"reviewed-by:{GITHUB_USERNAME}", "-review:approved"), headers)
+
+    # Approved: open PRs assigned to you that are approved by anyone.
+    # GitHub drops you from `review-requested` once you submit a review,
+    # so we union two queries to catch both PRs still awaiting your review
+    # and ones you already reviewed.
     approved_requested = get_query(search(f"review-requested:{GITHUB_USERNAME}", "review:approved"), headers)
     approved_reviewed = get_query(search(f"reviewed-by:{GITHUB_USERNAME}", "review:approved"), headers)
 
-    results = (for_review, approved_requested, approved_reviewed)
+    results = (for_review, reviewed, approved_requested, approved_reviewed)
     if any(r is None for r in results):
         error_menu("Could not reach GitHub")
         return
+
+    # A re-requested PR can match both "Needs Review" and "Reviewed"; let
+    # "Needs Review" win so each PR shows in a single section.
+    for_review_ids = {pr["id"] for pr in for_review}
+    reviewed = [pr for pr in reviewed if pr["id"] not in for_review_ids]
 
     # Merge the two approved queries, de-duping by PR id (dict keeps order).
     approved = list({pr["id"]: pr for pr in approved_requested + approved_reviewed}.values())
@@ -140,10 +152,12 @@ def fetch_prs():
     print(f"PRs ({len(for_review)}) | font=SFProText-Medium size=14")
     print("---")
 
-    # Print sections for needs review and approved PRs
+    # Print sections for needs review, reviewed, and approved PRs
     print_section("Needs Review", ORANGE, for_review, ORANGE_LIGHT, "No PRs waiting")
     print("---")
-    print_section("Approved", GREEN, approved, GREEN_LIGHT, "Nothing approved")
+    print_section("Reviewed", BLUE, reviewed, BLUE_LIGHT, "No PRs reviewed")
+    print("---")
+    print_section("Approved", GREEN, approved, GREEN_LIGHT, "No PRs approved")
     print("---")
     print("Refresh | refresh=true")
 
